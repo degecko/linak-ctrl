@@ -190,10 +190,10 @@
 
                         <select v-model="specific.action" style="width: 300px !important; text-align: left">
                             <option value="toggle">Toggle Between Seated/Standing</option>
-                            <option :value="0">Seated &mdash; {{ settings.positions[0] }}</option>
-                            <option :value="1">Standing &mdash; {{ settings.positions[1] }}</option>
+                            <option :value="0">Seated &mdash; {{ convert(settings.positions[0]) }}</option>
+                            <option :value="1">Standing &mdash; {{ convert(settings.positions[1]) }}</option>
                             <option :value="i + 2" v-for="(pos, i) in settings.positions.slice(2)">
-                                #{{ i + 3 }} &mdash; {{ settings.positions[i + 2] }}
+                                #{{ i + 3 }} &mdash; {{ convert(settings.positions[i + 2]) }}
                             </option>
                         </select>
                     </div>
