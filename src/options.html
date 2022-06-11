@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <title>LINAK CTRL Options</title>
+
+    <script src="vendor/tailwindcss.js"></script>
+    <script src="vendor/vue.js?v=3.2.37"></script>
+    <script src="common.js"></script>
+    <script src="options.js" defer></script>
+</head>
+<body>
+
+<div id="options" v-cloak>
+    <template v-if="settings">
+        <div class="flex items-center justify-center">
+            <label class="whitespace-nowrap">
+                Prefered Units:
+            </label>
+
+            <select v-model="settings.units" class="ml-4 flex-shrink" style="width: 120px !important">
+                <option value="cm">Centimeters</option>
+                <option value="inch">Inches</option>
+                <option value="mm">Milimeters</option>
+            </select>
+
+            <div class="flex-shrink-0 ml-12">
+                <input type="checkbox" id="dcp" style="width: auto !important" v-model="settings.displayPos">
+            </div>
+
+            <label for="dcp" class="whitespace-nowrap ml-2">
+                Display Current Position
+            </label>
+        </div>
+
+        <hr>
+
+        <div class="text-center mb-2">
+            Min Position: {{ convert(630) }} |
+            Max: {{ convert(1270) }}
+        </div>
+
+        <div class="flex flex-wrap" style="margin: 0 -.5rem">
+            <div class="w-1/2 p-2" v-for="(position, p) in settings.positions">
+                <div class="flex px-4 py-2 items-center rounded bg-faded">
+                    <label class="mr-auto">
+                        <span v-if="p === 0">
+                            Seated Position
+                        </span>
+                        <span v-else-if="p === 1">
+                            Standing Position
+                        </span>
+                        <span v-else>
+                            Memory Position #{{ p + 1 }}
+                        </span>
+                    </label>
+
+                    <input type="number"
+                           :value="convert(position)"
+                           @input="el => settings.positions[p] = backwardsConvert(+el.target.value)"
+                           :min="convert(630)"
+                           :max="convert(1270)"
+                           :step="settings.units === 'inch' ? 0.1 : 1">
+
+                    <div class="rem-pos" v-if="p > 1">
+                        <a href @click.prevent="settings.positions.splice(p, 1)">&times;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pb-4" v-if="settings.positions.length < 10">
+            <button @click="settings.positions.push(690)">
+                + New Position
+            </button>
+        </div>
+
+        <hr>
+
+        <h2 class="mt-4 font-bold">
+            Schedules
+        </h2>
+        <p class="text-sm mb-4">
+            You can define specific times or intervals when the desk should be raised or lowered
+        </p>
+
+        <div class="fields">
+            <div class="schedule" v-for="(schedule, s) in settings.schedules">
+                <div class="field w-full">
+                    <label>
+                        <span>Schedule #{{ s + 1 }} &mdash; Days</span>
+
+                        <a href @click.prevent="settings.schedules.splice(s, 1)">&times;</a>
+                    </label>
+
+                    <ul class="days">
+                        <li v-for="(label, day) in days"
+                            @click="schedule.days[day] = ! schedule.days[day]"
+                            :class="{ selected: schedule.days[day] }">
+                            {{ label }}
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="w-full mt-2 bg-faded rounded">
+                    <div class="px-4 py-2 bg-faded rounded">
+                        Intervals &mdash; <small>Toggles between Seated & Standing</small>
+                    </div>
+                </div>
+
+                <div class="interval bg-faded flex w-full relative" v-for="(interval, i) in schedule.intervals">
+                    <div class="field">
+                        <label>Every</label>
+
+                        <input type="number" v-model="interval.period" min="1" step="1" :max="interval.unit === 'hour' ? 23 : 59">
+                    </div>
+
+                    <div class="field">
+                        <label>Unit</label>
+
+                        <select v-model="interval.unit">
+                            <option value="hour">Hour{{ +interval.period === 1 ? '' : 's' }}</option>
+                            <option value="minute">Minute{{ +interval.period === 1 ? '' : 's' }}</option>
+                        </select>
+                    </div>
+
+                    <div class="field" style="padding-right: 1px">
+                        <label>Begin</label>
+
+                        <input type="number" v-model="interval.begin_hour" min="0" step="1" max="23" placeholder="hour">
+                    </div>
+
+                    <div class="field" style="padding-left: 1px">
+                        <label>&nbsp;</label>
+
+                        <input type="number" v-model="interval.begin_minute" min="0" step="1" max="59" placeholder="min">
+                    </div>
+
+                    <div class="field" style="padding-right: 1px">
+                        <label>
+                            <span>End</span>
+
+                            <a href @click.prevent="schedule.intervals.splice(i, 1)">&times;</a>
+                        </label>
+
+                        <input type="number" v-model="interval.end_hour" min="0" step="1" max="23" placeholder="hour">
+                    </div>
+
+                    <div class="field" style="padding-left: 1px">
+                        <label>
+                            <span>&nbsp;</span>
+
+                            <a href @click.prevent="schedule.intervals.splice(i, 1)">&times;</a>
+                        </label>
+
+                        <input type="number" v-model="interval.end_minute" min="0" step="1" max="59" placeholder="min">
+                    </div>
+                </div>
+
+                <div class="px-4 py-2 mb-4 w-full">
+                    <button @click="schedule.intervals.push({ period: 1, unit: 'hour', begin_hour: 10, begin_minute: 0, end_hour: 18, end_minute: 0 })">
+                        + New Interval
+                    </button>
+                </div>
+
+                <div class="w-full bg-faded roudned-t">
+                    <div class="px-4 py-2 bg-faded rounded">
+                        Specific Times
+                    </div>
+                </div>
+
+                <div class="specific-time bg-faded flex w-full relative" v-for="(specific, s) in schedule.specific">
+                    <div class="field" style="padding-right: 2px">
+                        <label>Hour</label>
+                        <input type="number" v-model="specific.hour" min="0" step="1" max="23">
+                    </div>
+
+                    <div class="field" style="padding-left: 2px">
+                        <label>Minute</label>
+                        <input type="number" v-model="specific.minute" min="0" step="1" max="59">
+                    </div>
+
+                    <div class="field">
+                        <label>
+                            <span>Position</span>
+                            <a href @click.prevent="schedule.specific.splice(s, 1)">&times;</a>
+                        </label>
+
+                        <select v-model="specific.action" style="width: 300px !important; text-align: left">
+                            <option value="toggle">Toggle Between Seated/Standing</option>
+                            <option :value="0">Seated &mdash; {{ settings.positions[0] }}</option>
+                            <option :value="1">Standing &mdash; {{ settings.positions[1] }}</option>
+                            <option :value="i + 2" v-for="(pos, i) in settings.positions.slice(2)">
+                                #{{ i + 3 }} &mdash; {{ settings.positions[i + 2] }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="px-4 py-2 mb-2 w-full">
+                    <button @click="schedule.specific.push({ hour: 13, minute: 37, action: 'toggle' })">
+                        + New Specific Time
+                    </button>
+                </div>
+            </div>
+
+            <div class="px-2 mt-2 w-full">
+                <button @click="settings.schedules.push({ days: [], intervals: [], specific: [] })">
+                    + New Schedule
+                </button>
+            </div>
+        </div>
+    </template>
+</div>
+
+<link rel="stylesheet/less" type="text/css" href="app.less">
+<script src="vendor/less.js"></script>
+
+</body>
+</html>
