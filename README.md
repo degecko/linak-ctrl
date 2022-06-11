@@ -59,6 +59,8 @@ Assuming you have Node installed, run the following command:
 node run start
 ```
 
+Note: You might need to put the desk in discovery mode the first time you connect to it through the app. You can do that by pressing the bluetooth button on the controller for 2-3 seconds, until a blue LED comes on. It quickly turns off, but nevertheless, it'll in discovery mode.
+
 ## Author
 
 - [Cosmin Gheorghita](https://gecko.dev)
