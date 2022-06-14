@@ -3,7 +3,7 @@ const { app, BrowserWindow } = require('electron')
 const createWindow = () => {
     const win = new BrowserWindow({
         width: 320,
-        minWidth: 320,
+        minWidth: 340,
         height: 44,
         minHeight: 44,
         maxHeight: 44,
@@ -18,7 +18,7 @@ const createWindow = () => {
 
     win.loadFile('src/index.html')
 
-    // win.webContents.openDevTools()
+    // win.webContents.openDevTools({ mode: 'detach' })
 }
 
 app.whenReady().then(() => {
@@ -29,4 +29,4 @@ app.whenReady().then(() => {
     })
 })
 
-app.on('window-all-closed', () => (process.platform === 'darwin') && app.quit())
+app.on('window-all-closed', () => app.quit())

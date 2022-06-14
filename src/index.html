@@ -11,10 +11,14 @@
     <script src="common.js"></script>
     <script src="app.js" defer></script>
 </head>
-<body style="app-region: drag">
+<body>
 
 <div id="app">
     <div id="buttons">
+        <div class="dragger" v-if="! settings.displayPos || ! connected">
+            &nbsp;
+        </div>
+
         <template v-if="connected">
             <div class="current-pos" v-if="settings.displayPos">
                 {{ convert(pos) }}
