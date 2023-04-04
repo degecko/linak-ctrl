@@ -9,6 +9,8 @@ const createWindow = () => {
         maxHeight: 44,
         frame: false,
     })
+    
+    win.setAlwaysOnTop(true, 'floating');
 
     win.webContents.on('select-bluetooth-device', (e, devices, cb) => {
         e.preventDefault()
